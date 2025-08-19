@@ -223,7 +223,11 @@ void UbloxNode::addProductInterface(const std::string & product_category,
     components_.push_back(std::make_shared<HpgRefProduct>(nav_rate_, meas_rate_, updater_, rtcms_, this));
   } else if ((product_category == "HPG" || product_category == "HPS") && ref_rov == "ROV") {
     components_.push_back(std::make_shared<HpgRovProduct>(nav_rate_, updater_, this));
-  } else if (product_category == "HPG" || product_category == "HPS") {
+  } else if (product_category == "HPS" && ref_rov.empty()) {
+    // HPS devices without REF/ROV designation (like ZED-F9R) use ADR/UDR and HPG ROV
+    components_.push_back(std::make_shared<AdrUdrProduct>(protocol_version_, nav_rate_, meas_rate_, frame_id_, updater_, this));
+    components_.push_back(std::make_shared<HpgRovProduct>(nav_rate_, updater_, this));
+  } else if (product_category == "HPG") {
     components_.push_back(std::make_shared<HpPosRecProduct>(nav_rate_, meas_rate_, frame_id_, updater_, rtcms_, this));
   } else if (product_category == "TIM") {
     components_.push_back(std::make_shared<TimProduct>(frame_id_, updater_, this));
@@ -232,9 +236,6 @@ void UbloxNode::addProductInterface(const std::string & product_category,
     components_.push_back(std::make_shared<AdrUdrProduct>(protocol_version_, nav_rate_, meas_rate_, frame_id_, updater_, this));
   } else if (product_category == "FTS") {
     components_.push_back(std::make_shared<FtsProduct>());
-  } else if (product_category == "HPS") {
-    components_.push_back(std::make_shared<AdrUdrProduct>(protocol_version_, nav_rate_, meas_rate_, frame_id_, updater_, this));
-    components_.push_back(std::make_shared<HpgRovProduct>(nav_rate_, updater_, this));
   } else {
     RCLCPP_WARN(this->get_logger(), "Product category %s %s from MonVER message not recognized %s",
                 product_category.c_str(), ref_rov.c_str(),
